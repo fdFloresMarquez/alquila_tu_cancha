@@ -5,7 +5,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -21,8 +20,8 @@ import {
   FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-import { CirclePlus } from "lucide-react";
+
+import { type Team } from "./Teams";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -30,8 +29,17 @@ const formSchema = z.object({
   }),
 });
 
-export default function TeamsDialog() {
-  // 1. Define your form.
+export default function TeamsDialog({
+  dialogIsOpen,
+  setTeam,
+  setDialogIsOpen,
+  team,
+}: {
+  dialogIsOpen: boolean;
+  setTeam: (team: Team) => void;
+  setDialogIsOpen: (isOpen: boolean) => void;
+  team: Team | null;
+}) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -41,25 +49,15 @@ export default function TeamsDialog() {
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    console.log(values);
+    setTeam({ name: values.name });
+    setDialogIsOpen(false);
   }
+
   return (
-    <Dialog>
-      <DialogTrigger asChild>
-        <Card className="h-80 w-full hover:cursor-pointer hover:bg-slate-500">
-          <CardHeader>
-            <CardTitle className="text-center">Crear Equipo</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center justify-center">
-            <CirclePlus className="size-10" />
-          </CardContent>
-        </Card>
-      </DialogTrigger>
+    <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Crear Equipo</DialogTitle>
+          <DialogTitle>{team ? 'Editar' : 'Crear'} Equipo</DialogTitle>
           <DialogDescription>Ingrese nombre para el equipo.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
