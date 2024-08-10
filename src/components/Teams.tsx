@@ -11,6 +11,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "./ui/tooltip";
+import PlayerDialog from "./PlayerDialog";
 
 export interface Team {
   name: string;
@@ -22,8 +23,8 @@ export default function Teams() {
   const [team2, setTeam2] = useState<Team | null>(null);
 
   return (
-    <section className="w-full flex flex-col gap-20 flex-wrap">
-      <h2 className="text-2xl font-extrabold tracking-tight text-center text-white sm:text-[5rem]">
+    <section className="flex w-full flex-col flex-wrap gap-20">
+      <h2 className="text-center text-2xl font-extrabold tracking-tight text-white sm:text-[5rem]">
         Equipos
       </h2>
 
@@ -43,6 +44,7 @@ function TeamCard({
   setTeam: (team: Team | null) => void;
 }) {
   const [dialogIsOpen, setDialogIsOpen] = useState<boolean>(false);
+  const [playerDialogIsOpen, setPlayerDialogIsOpen] = useState<boolean>(false);
 
   return (
     <>
@@ -90,13 +92,9 @@ function TeamCard({
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => setDialogIsOpen(true)}
-                    >
-                      <CirclePlus className="size-4" />
-                    </Button>
+                    <PlayerDialog
+                      setTeam={setTeam}
+                    />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Agregar jugador</p>

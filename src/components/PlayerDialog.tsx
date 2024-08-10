@@ -22,6 +22,8 @@ import {
 import { Input } from "./ui/input";
 
 import { type Team } from "./Teams";
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import { CirclePlus } from "lucide-react";
 
 const formSchema = z.object({
   name: z.string().min(2, {
@@ -29,16 +31,10 @@ const formSchema = z.object({
   }),
 });
 
-export default function TeamsDialog({
-  dialogIsOpen,
+export default function PlayerDialog({
   setTeam,
-  setDialogIsOpen,
-  team,
 }: {
-  dialogIsOpen: boolean;
   setTeam: (team: Team) => void;
-  setDialogIsOpen: (isOpen: boolean) => void;
-  team: Team | null;
 }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -50,15 +46,19 @@ export default function TeamsDialog({
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
     setTeam({ name: values.name });
-    setDialogIsOpen(false);
   }
 
   return (
-    <Dialog open={dialogIsOpen} onOpenChange={setDialogIsOpen}>
+    <Dialog>
+      <DialogTrigger>
+        <Button variant="outline" size="icon">
+          <CirclePlus className="size-4" />
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{team ? 'Editar' : 'Crear'} Equipo</DialogTitle>
-          <DialogDescription>Ingrese nombre para el equipo.</DialogDescription>
+          <DialogTitle>Elegir Jugador</DialogTitle>
+          <DialogDescription>Ingrese nombre del jugador.</DialogDescription>
         </DialogHeader>
         <Form {...form}>
           <form
@@ -73,10 +73,10 @@ export default function TeamsDialog({
                 <FormItem>
                   <FormLabel>Nombre</FormLabel>
                   <FormControl>
-                    <Input placeholder="Barcelona" {...field} />
+                    <Input placeholder="Messi" {...field} />
                   </FormControl>
                   <FormDescription>
-                    Ingrese el nombre del equipo.
+                    Este va a ser el nombre del Jugador.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -86,7 +86,7 @@ export default function TeamsDialog({
         </Form>
         <DialogFooter>
           <Button form="team-form" type="submit">
-            Guardar cambios
+            Buscar
           </Button>
         </DialogFooter>
       </DialogContent>
