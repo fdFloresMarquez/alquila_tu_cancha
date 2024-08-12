@@ -12,10 +12,13 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import PlayerDialog from "./PlayerDialog";
+import { type Player } from "@/types/types";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { getInitials } from "@/utils/functions";
 
 export interface Team {
   name: string;
-  members?: string[];
+  members?: Player[];
 }
 
 export default function Teams() {
@@ -44,7 +47,16 @@ function TeamCard({
   setTeam: (team: Team | null) => void;
 }) {
   const [dialogIsOpen, setDialogIsOpen] = useState<boolean>(false);
-  const [playerDialogIsOpen, setPlayerDialogIsOpen] = useState<boolean>(false);
+
+  function addPlayer(player: Player) {
+    if (team) {
+      setTeam({
+        ...team,
+        members: team.members ? [...team.members, player] : [player],
+      });
+    }
+    console.log(team);
+  }
 
   return (
     <>
@@ -87,20 +99,44 @@ function TeamCard({
           </CardHeader>
           <CardContent>
             <div className="flex flex-row items-center gap-4">
-              <p>Jugadores 0/5</p>
+              <p>Jugadores {team.members ? team.members.length : 0}/5</p>
 
               <TooltipProvider>
                 <Tooltip>
                   <TooltipTrigger>
-                    <PlayerDialog
-                      setTeam={setTeam}
-                    />
+                    <PlayerDialog addPlayer={addPlayer} />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Agregar jugador</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+            </div>
+
+            <div className="flex flex-col">
+              {team.members?.map((player) => (
+                <div key={player.team_key} className="flex w-full items-center justify-between gap-4 border-b p-2 duration-300 hover:cursor-pointer hover:bg-gray-700">
+                  <div className="flex items-center gap-4">
+                    <Avatar>
+                      <AvatarImage
+                        src={player.player_image}
+                        alt={player.player_name}
+                      />
+                      <AvatarFallback>
+                        {getInitials(player.player_name)}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <h3 className="text-lg font-semibold">
+                        {player.player_name}
+                      </h3>
+                      <p className="text-sm text-gray-400">
+                        {player.team_name}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </CardContent>
         </Card>

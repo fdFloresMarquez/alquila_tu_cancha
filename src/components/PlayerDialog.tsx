@@ -8,7 +8,6 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "./ui/button";
 
-import { type Team } from "./Teams";
 import { DialogTrigger } from "@radix-ui/react-dialog";
 import { CirclePlus, LoaderCircle } from "lucide-react";
 import { env } from "@/env";
@@ -16,6 +15,10 @@ import { type Player } from "@/types/types";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import PlayerDialogForm from "./PlayerDialogForm";
+import { ScrollArea } from "./ui/scroll-area";
+import PlayerListItem from "./PlayerListItem";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { getInitials } from "@/utils/functions";
 
 async function fetchPlayers(playerName: string): Promise<Player[]> {
   return await fetch(
@@ -32,11 +35,13 @@ async function fetchPlayers(playerName: string): Promise<Player[]> {
 }
 
 export default function PlayerDialog({
-  setTeam,
+  addPlayer,
 }: {
-  setTeam: (team: Team) => void;
+  addPlayer: (player: Player) => void;
 }) {
   const [playerName, setPlayerName] = useState<string | null>(null);
+  const [playerSelected, setPlayerSelected] = useState<Player | null>(null);
+  const [isOpen, setIsOpen] = useState<boolean>(false);
 
   const { isLoading, isError, data } = useQuery({
     queryKey: ["players", playerName],
@@ -44,10 +49,8 @@ export default function PlayerDialog({
     enabled: !!playerName,
   });
 
-  console.log(data);
-
   return (
-    <Dialog>
+    <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger>
         <Button variant="outline" size="icon">
           <CirclePlus className="size-4" />
@@ -76,31 +79,74 @@ export default function PlayerDialog({
             </DialogFooter>
           </>
         )}
-        {data && (
+        {data && !playerSelected && (
           <>
-            {data.map((player: Player) => (
-              <div
-                key={player.player_key}
-                className="flex w-full items-center justify-between gap-4"
-              >
-                <div className="flex items-center gap-4">
-                  <img
-                    src={player.player_image}
-                    alt={player.player_name}
-                    className="h-10 w-10 rounded-full"
-                  />
-                  <div>
-                    <h3 className="text-lg font-semibold">
-                      {player.player_name}
-                    </h3>
-                    <p className="text-sm text-gray-400">{player.team_name}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
+            <ScrollArea className="h-72 w-full rounded-md border">
+              {data.map((player: Player) => (
+                <PlayerListItem
+                  key={`${player.player_key}-${player.team_name}`}
+                  player={player}
+                  setPlayer={setPlayerSelected}
+                />
+              ))}
+            </ScrollArea>
+
             <DialogFooter className="sm:justify-start">
               <Button variant="outline" onClick={() => setPlayerName(null)}>
                 Volver
+              </Button>
+            </DialogFooter>
+          </>
+        )}
+
+        {playerSelected && (
+          <>
+            <div className="flex items-center justify-center">
+              <Avatar>
+                <AvatarImage
+                  src={playerSelected.player_image}
+                  alt={playerSelected.player_name}
+                />
+                <AvatarFallback>
+                  {getInitials(playerSelected.player_name)}
+                </AvatarFallback>
+              </Avatar>
+            </div>
+            <div className="flex flex-row items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {playerSelected.player_name}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  {playerSelected.team_name}
+                </p>
+                <p className="text-sm text-gray-400">
+                  Edad: {playerSelected.player_age}
+                </p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">
+                  Rating: {playerSelected.player_rating}
+                </h3>
+                <p className="text-sm text-gray-400">
+                  Goles: {playerSelected.player_goals}
+                </p>
+                <p className="text-sm text-gray-400">
+                  Numero: {playerSelected.player_number}
+                </p>
+              </div>
+            </div>
+            <DialogFooter className="sm:justify-between">
+              <Button variant="outline" onClick={() => setPlayerSelected(null)}>
+                Cancelar
+              </Button>
+              <Button
+                onClick={() => {
+                  addPlayer(playerSelected);
+                  setIsOpen(false);
+                }}
+              >
+                Agregar Jugador
               </Button>
             </DialogFooter>
           </>
