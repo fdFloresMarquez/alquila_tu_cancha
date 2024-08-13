@@ -49,7 +49,7 @@ export default function TeamsDialog({
 
   // 2. Define a submit handler.
   function onSubmit(values: z.infer<typeof formSchema>) {
-    setTeam({ name: values.name });
+    setTeam({ ...team, name: values.name });
     setDialogIsOpen(false);
   }
 
