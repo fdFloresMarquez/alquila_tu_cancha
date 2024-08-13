@@ -1,4 +1,5 @@
 import { ReactQueryClientProvider } from "@/components/ReactQueryClientProvider";
+import { Toaster } from "@/components/ui/sonner";
 import "@/styles/globals.css";
 
 import { GeistSans } from "geist/font/sans";
@@ -16,7 +17,10 @@ export default function RootLayout({
   return (
     <ReactQueryClientProvider>
       <html lang="es" className={`${GeistSans.variable}`}>
-        <body className="dark">{children}</body>
+        <body className="dark">
+          {children}
+          <Toaster />
+        </body>
       </html>
     </ReactQueryClientProvider>
   );
