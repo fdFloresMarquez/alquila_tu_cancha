@@ -19,6 +19,7 @@ import { ScrollArea } from "./ui/scroll-area";
 import PlayerListItem from "./PlayerListItem";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { getInitials } from "@/utils/functions";
+import { usePlayerContext } from "@/context/playersContext";
 
 async function fetchPlayers(playerName: string): Promise<Player[]> {
   return await fetch(
@@ -39,15 +40,26 @@ export default function PlayerDialog({
 }: {
   addPlayer: (player: Player) => void;
 }) {
+  const { players, addPlayer: addPlayerKey } = usePlayerContext();
   const [playerName, setPlayerName] = useState<string | null>(null);
   const [playerSelected, setPlayerSelected] = useState<Player | null>(null);
   const [isOpen, setIsOpen] = useState<boolean>(false);
+
+  console.log(players);
 
   const { isLoading, isError, data } = useQuery({
     queryKey: ["players", playerName],
     queryFn: () => fetchPlayers(playerName!),
     enabled: !!playerName,
   });
+
+  function handleAddPlayer(player: Player) {
+    addPlayer(player);
+    addPlayerKey(player.player_key);
+    setPlayerName(null);
+    setPlayerSelected(null);
+    setIsOpen(false);
+  }
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -82,13 +94,16 @@ export default function PlayerDialog({
         {data && !playerSelected && (
           <>
             <ScrollArea className="h-72 w-full rounded-md border">
-              {data.map((player: Player) => (
-                <PlayerListItem
-                  key={`${player.player_key}-${player.team_name}`}
-                  player={player}
-                  setPlayer={setPlayerSelected}
-                />
-              ))}
+              {data.map((player: Player) => {
+                if (!players.includes(player.player_key))
+                  return (
+                    <PlayerListItem
+                      key={`${player.player_key}-${player.team_name}`}
+                      player={player}
+                      setPlayer={setPlayerSelected}
+                    />
+                  );
+              })}
             </ScrollArea>
 
             <DialogFooter className="sm:justify-start">
@@ -140,12 +155,7 @@ export default function PlayerDialog({
               <Button variant="outline" onClick={() => setPlayerSelected(null)}>
                 Cancelar
               </Button>
-              <Button
-                onClick={() => {
-                  addPlayer(playerSelected);
-                  setIsOpen(false);
-                }}
-              >
+              <Button onClick={() => handleAddPlayer(playerSelected)}>
                 Agregar Jugador
               </Button>
             </DialogFooter>

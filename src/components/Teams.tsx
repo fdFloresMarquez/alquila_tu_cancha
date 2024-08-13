@@ -2,7 +2,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useState } from "react";
 import TeamsDialog from "./TeamsDialog";
-import { CirclePlus, Pencil } from "lucide-react";
+import { CirclePlus, Pencil, X } from "lucide-react";
 import { Button } from "./ui/button";
 import DeleteTeamDialog from "./DeleteTeamDialog";
 import {
@@ -15,6 +15,8 @@ import PlayerDialog from "./PlayerDialog";
 import { type Player } from "@/types/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { getInitials } from "@/utils/functions";
+import { usePlayerContext } from "@/context/playersContext";
+import { DeletePlayerDialog } from "./DeletePlayerDialog";
 
 export interface Team {
   name: string;
@@ -47,6 +49,7 @@ function TeamCard({
   setTeam: (team: Team | null) => void;
 }) {
   const [dialogIsOpen, setDialogIsOpen] = useState<boolean>(false);
+  const { removePlayer } = usePlayerContext()
 
   function addPlayer(player: Player) {
     if (team) {
@@ -55,7 +58,18 @@ function TeamCard({
         members: team.members ? [...team.members, player] : [player],
       });
     }
-    console.log(team);
+  }
+
+  function deletePlayer(playerKey: Player["player_key"]) {
+    if (team) {
+      setTeam({
+        ...team,
+        members: team.members?.filter(
+          (player) => player.player_key !== playerKey,
+        ),
+      });
+      removePlayer(playerKey)
+    }
   }
 
   return (
@@ -80,7 +94,7 @@ function TeamCard({
           </CardContent>
         </Card>
       ) : (
-        <Card className="h-80 w-full">
+        <Card className="min-h-80 w-full">
           <CardHeader>
             <div className="flex flex-row items-center justify-between">
               <div className="flex items-center gap-4">
@@ -115,7 +129,10 @@ function TeamCard({
 
             <div className="flex flex-col">
               {team.members?.map((player) => (
-                <div key={player.team_key} className="flex w-full items-center justify-between gap-4 border-b p-2 duration-300 hover:cursor-pointer hover:bg-gray-700">
+                <div
+                  key={player.team_key}
+                  className="flex w-full items-center justify-between gap-4 border-b p-2 duration-300 hover:cursor-pointer hover:bg-gray-700"
+                >
                   <div className="flex items-center gap-4">
                     <Avatar>
                       <AvatarImage
@@ -134,6 +151,9 @@ function TeamCard({
                         {player.team_name}
                       </p>
                     </div>
+                  </div>
+                  <div>
+                    <DeletePlayerDialog playerKey={player.player_key} deletePlayer={deletePlayer} />
                   </div>
                 </div>
               ))}
